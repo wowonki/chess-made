@@ -46,17 +46,14 @@ public class ChessBoard {
 	public Piece getPiece(int x, int y) {
 		return this.board[x][y];
 	}
-	
 	private Boolean isOutBoard(int x, int y) {
 		return (x >= this.size && y >= this.size);
 	}
-	
 	public Boolean movePiece(int startX, int startY, int endX, int endY) {
 		
 		// check is valid movement
 		if (this.isOutBoard(endX, endY)) System.out.println("Invalid Movement[1]: Out of Range.");
 		else if ((this.board[startX][startY] == null)) System.out.println("Invalid Movement[2]: There is no Piece at (" + startX + "," + startY + ")");
-		else if (this.board[endX][endY] != null) System.out.println("Invalid Movement[3]: The piece is already placed at (" + endX + "," + endY + ")");
 		else if (startX == endX && startY == endY) System.out.println("Invalid Movement[4]: The piece must move from starting point.");
 		else if (!(this.board[startX][startY].isValidMove(startX, startY, endX, endY, this))) {
 			System.out.println("Invalid Movement[5]: The piece must follow it's movement rule.");
@@ -68,11 +65,28 @@ public class ChessBoard {
 			System.out.println("Invalid Movement[6]: It's turn of the white");
 		}
 
+		else if (this.board[endX][endY] != null) {
+			if (this.board[endX][endY].color.equals("white") && this.turn == -1) {
+				this.board[endX][endY] = this.getPiece(startX, startY);
+				this.board[startX][startY] = null;
+				this.turn *= -1;
+				System.out.println("Gotcha!");
+				return true;
+			}
+			else if (this.board[endX][endY].color.equals("black") && this.turn == 1) {
+				this.board[endX][endY] = this.getPiece(startX, startY);
+				this.board[startX][startY] = null;
+				this.turn *= -1;
+				System.out.println("Gotcha!");
+				return true;
+			}
+			else System.out.println("Invalid Movement[3]: The piece is already placed at (" + endX + "," + endY + ")");
+		}
+
 		else {
 				this.board[endX][endY] = this.getPiece(startX, startY);
 				this.board[startX][startY] = null;
 				this.turn *= -1;
-				System.out.println(this.turn);
 				return true;
 			}
 		return false;
