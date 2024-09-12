@@ -2,6 +2,7 @@
 public class ChessBoard {
 	private final Piece[][] board;
 	private final int size = 8;
+	private int turn = 1;
 	
 	public ChessBoard() {
 		// binding object to variable.
@@ -19,7 +20,7 @@ public class ChessBoard {
 		// Place Pawn on the Board
 		for (int i=0;i<8;i++) {
 			board[6][i] = new Pawn("white");
-			board[1][i] = new Pawn("balck");
+			board[1][i] = new Pawn("black");
 		}
 		
 		// Place Other Materials
@@ -60,9 +61,18 @@ public class ChessBoard {
 		else if (!(this.board[startX][startY].isValidMove(startX, startY, endX, endY, this))) {
 			System.out.println("Invalid Movement[5]: The piece must follow it's movement rule.");
 		}
+		else if (this.getPiece(startX, startY).color.equals("white") && this.turn == -1) {
+			System.out.println("Invalid Movement[6]: It's turn of the black");
+		}
+		else if (this.getPiece(startX, startY).color.equals("black") && this.turn == 1) {
+			System.out.println("Invalid Movement[6]: It's turn of the white");
+		}
+
 		else {
 				this.board[endX][endY] = this.getPiece(startX, startY);
 				this.board[startX][startY] = null;
+				this.turn *= -1;
+				System.out.println(this.turn);
 				return true;
 			}
 		return false;
