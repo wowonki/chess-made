@@ -69,6 +69,16 @@ public class ChessGameGUI extends JFrame {
                 }
             }
         }
+        chessBoard.updateCheck();
+        if (chessBoard.getCheck()) { chessBoard.updateCheckmate(); }
+        if (chessBoard.getGameOver()) { this.endGame(); }
+    }
+    private void endGame() {
+        // 배경을 불투명한 회색으로 바꾸고
+        // 더이상 버튼이 작동하지 않도록 해서 게임을 이어나가지 못하게.
+        String winner = chessBoard.getTurn() == 1?"black":"white";
+        System.out.println("Checkmate! " + winner + " Win.");
+        // System.exit(0);
     }
 
     // 마우스 클릭 처리

@@ -12,8 +12,6 @@ public class Pawn extends Piece {
 		return color.equals("white") ? "resource/whitePawn.png" : "resource/blackPawn.png";
 	}
 
-	;
-
 	@Override
 	public Boolean isValidMove(int startX, int startY, int endX, int endY, ChessBoard board) {
 		if (board.getPiece(endX, endY) == null) {

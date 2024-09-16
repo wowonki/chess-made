@@ -22,27 +22,24 @@ public class Bishop extends Piece {
 				for (int i = 1; i < dX; i++){
 					valid = valid && board.getPiece(startX + i, startY + i) == null;
 				}
-				return valid;
 			}
 			else if (dX > 0 && dY < 0) {
 				for (int i = 1; i < dX; i++){
 					valid = valid && board.getPiece(startX + i, startY - i) == null;
 				}
-				return valid;
 			}
 			else if (dX < 0 && dY > 0) {
 				for (int i = 1; i < dY; i++){
 					valid = valid && board.getPiece(startX - i, startY + i) == null;
 
 				}
-				return valid;
 			}
 			else {
 				for (int i = 1; i < -dY; i++){
 					valid = valid && board.getPiece(startX - i, startY - i) == null;
 				}
-				return valid;
 			}
+			return valid;
 		}
 		else return false;
 	}

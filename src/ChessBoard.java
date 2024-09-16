@@ -1,8 +1,21 @@
+import java.awt.*;
 
 public class ChessBoard {
 	private final Piece[][] board;
 	private final int size = 8;
 	private int turn = 1;
+	private boolean check = false;
+	private boolean gameOver = false;
+
+	public boolean getCheck() {
+		return this.check;
+	}
+	public boolean getGameOver() {
+		return this.gameOver;
+	}
+	public int getTurn() {
+		return this.turn;
+	}
 	
 	public ChessBoard() {
 		// binding object to variable.
@@ -39,8 +52,8 @@ public class ChessBoard {
 		board[0][6] = new Knight("black");
 		board[0][2] = new Bishop("black");
 		board[0][5] = new Bishop("black");
-		board[0][3] = new King("black");
-		board[0][4] = new Queen("black");
+		board[0][4] = new King("black");
+		board[0][3] = new Queen("black");
 	}
 	
 	public Piece getPiece(int x, int y) {
@@ -49,46 +62,131 @@ public class ChessBoard {
 	private Boolean isOutBoard(int x, int y) {
 		return (x >= this.size && y >= this.size);
 	}
+
+	// Check Check.
+	public void updateCheck() {
+		String myCol = turn == 1?"white":"black";
+
+		if (this.checkCheck()){
+			this.check = true;
+			System.out.println("Check! " + myCol + " must move to protect King.");
+		}
+		else { this.check = false; }
+	}
+
+	private boolean checkCheck() {
+		String oppCol = turn == 1?"black":"white";
+		int[] kingPosition = getMyKingPosition();
+		int x = kingPosition[0];
+		int y = kingPosition[1];
+
+		for (int i=0;i<size;i++) {
+			for (int j=0;j<size;j++) {
+				if (getPiece(i, j) != null && getPiece(i, j).color.equals(oppCol) && getPiece(i, j).isValidMove(i, j, x, y, this)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	private boolean checkEscapeCheck(int startX, int startY, int endX, int endY) {
+		Piece startPiece = getPiece(startX, startY);
+		Piece endPiece = getPiece(endX, endY);
+
+		board[endX][endY] = startPiece;
+		board[startX][startY] = null;
+		boolean isEscape = !checkCheck();
+		board[startX][startY] = startPiece;
+		board[endX][endY] = endPiece;
+		return isEscape;
+	}
+
+
+	private int[] getMyKingPosition() {
+		int[] kingPosition = new int[2];
+		String myCol = turn == 1?"white":"black";
+			for (int i=0;i<size;i++) {
+				for (int j=0;j<size;j++) {
+					if (getPiece(i, j) instanceof King && getPiece(i, j).color.equals(myCol)) {
+						int[] pos = new int[2];
+						pos[0] = i;
+						pos[1] = j;
+						return pos;
+					}
+				}
+			} return null; // this line never run.
+	}
+	private boolean checkCheckmate() {
+		String oppCol = (turn==1)?"black":"white";
+		String myCol = (turn==1)?"white":"black";
+
+		for (int startX=0;startX<size;startX++) {
+			for (int startY=0;startY<size;startY++) {
+				if (getPiece(startX, startY) != null) {
+					if (getPiece(startX, startY).color.equals(myCol)) {
+						for (int endX=0;endX<size;endX++) {
+							for (int endY=0;endY<size;endY++) {
+								if (getPiece(endX, endY) != null) {
+									if (getPiece(startX, startY).isValidMove(startX, startY, endX, endY, this) &&
+											(this.getPiece(endX, endY).color.equals(oppCol)) &&
+											checkEscapeCheck(startX, startY, endX, endY)) {
+										return false;
+									}
+								} else {
+									if (getPiece(startX, startY).isValidMove(startX, startY, endX, endY, this) &&
+											checkEscapeCheck(startX, startY, endX, endY)) {
+										return false;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} return true;
+	}
+	public void updateCheckmate() {
+		if (checkCheckmate()) { gameOver = true; }
+	}
+
+
 	public Boolean movePiece(int startX, int startY, int endX, int endY) {
-		
 		// check is valid movement
+		String oppCol = turn == 1?"black":"white";
+		String myCol = turn == -1?"black":"white";
+		Piece startPiece = this.board[startX][startY];
+		Piece endPiece = this.board[endX][endY];
+
 		if (this.isOutBoard(endX, endY)) System.out.println("Invalid Movement[1]: Out of Range.");
-		else if ((this.board[startX][startY] == null)) System.out.println("Invalid Movement[2]: There is no Piece at (" + startX + "," + startY + ")");
-		else if (startX == endX && startY == endY) System.out.println("Invalid Movement[4]: The piece must move from starting point.");
-		else if (!(this.board[startX][startY].isValidMove(startX, startY, endX, endY, this))) {
+		else if ((startPiece == null)) System.out.println("Invalid Movement[2]: There is no Piece at (" + startX + "," + startY + ")");
+		else if (!(startPiece.isValidMove(startX, startY, endX, endY, this))) {
 			System.out.println("Invalid Movement[5]: The piece must follow it's movement rule.");
 		}
-		else if (this.getPiece(startX, startY).color.equals("white") && this.turn == -1) {
-			System.out.println("Invalid Movement[6]: It's turn of the black");
+		else if (this.getPiece(startX, startY).color.equals(oppCol)) {
+			System.out.println("Invalid Movement[6]: It's turn of the " + myCol);
 		}
-		else if (this.getPiece(startX, startY).color.equals("black") && this.turn == 1) {
-			System.out.println("Invalid Movement[6]: It's turn of the white");
-		}
-
-		else if (this.board[endX][endY] != null) {
-			if (this.board[endX][endY].color.equals("white") && this.turn == -1) {
-				this.board[endX][endY] = this.getPiece(startX, startY);
-				this.board[startX][startY] = null;
-				this.turn *= -1;
-				System.out.println("Gotcha!");
-				return true;
-			}
-			else if (this.board[endX][endY].color.equals("black") && this.turn == 1) {
-				this.board[endX][endY] = this.getPiece(startX, startY);
-				this.board[startX][startY] = null;
-				this.turn *= -1;
-				System.out.println("Gotcha!");
-				return true;
-			}
-			else System.out.println("Invalid Movement[3]: The piece is already placed at (" + endX + "," + endY + ")");
+		else if (endPiece != null && endPiece.color.equals(myCol)) {
+			System.out.println("Invalid Movement[7]: End point is occupied by your piece.");
 		}
 
-		else {
-				this.board[endX][endY] = this.getPiece(startX, startY);
-				this.board[startX][startY] = null;
-				this.turn *= -1;
-				return true;
+		// Move Correctly
+		else if (true) {
+			this.board[endX][endY] = startPiece;
+			this.board[startX][startY] = null;
+
+			if (check && (this.checkCheck())) {
+				// check if the movement protect king.
+				System.out.println("Invalid Movement[8]: Your King under the threaten. You should protect him.");
+				this.board[endX][endY] = endPiece;
+				this.board[startX][startY] = startPiece;
+
+				return false;
 			}
+
+			this.turn *= -1;
+			if (endPiece != null) { System.out.println("Gotcha!"); }
+			return true;
+		}
 		return false;
 	}
 	
